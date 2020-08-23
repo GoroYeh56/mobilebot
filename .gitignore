@@ -1,0 +1,13 @@
+*.a
+*.o
+lcmtypes/*.c
+lcmtypes/*.h
+lcmtypes/*.hpp
+lcmtypes/*.cpp
+bin/*
+java/.LCMTYPES_CLASS
+java/build/*
+java/rob550.jar
+java/src/*
+optitrack/common/lib/libcommon.a
+python/lcmtypes/*
