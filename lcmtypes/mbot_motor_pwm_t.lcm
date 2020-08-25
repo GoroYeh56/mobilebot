@@ -1,0 +1,8 @@
+struct mbot_motor_pwm_t
+{
+
+    int64_t utime;
+
+    float left_motor_pwm; // [-1.0..1.0]
+    float right_motor_pwm; // [-1.0..1.0]
+}

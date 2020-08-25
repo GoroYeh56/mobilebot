@@ -1,7 +1,7 @@
 # this target will be compiled
-TARGET = ../bin/mobilebot
+TARGET = ../bin/drive_simple
 
-CC			:= gcc
+CC		    := gcc
 LINKER		:= gcc -o
 CFLAGS		:= -std=c99 -c -Wall -g `pkg-config --cflags lcm`
 LFLAGS		:= -lm -lrt -lpthread -lrobotcontrol -L `pkg-config --libs lcm`
@@ -15,7 +15,7 @@ LCMTYPES    := $(shell find ../lcmtypes/ -name '*.lcm')
 LCMOBJS     := $(LCMTYPES:$%.lcm=$%.o) 
 
 prefix		:= /usr/local
-RM			:= rm -f
+RM		    := rm -f
 INSTALL		:= install -m 4755
 INSTALLDIR	:= install -d -m 755 
 
@@ -51,7 +51,8 @@ install:
 
 clean:
 	@$(RM) $(OBJECTS)
-	@$(RM) $(LCMOBJS)
+	@$(RM) $(IGNORE)
+	@$(RM) $(IGNORE:=.o)
 	@$(RM) $(TARGET)
 	@echo "$(TARGET) Clean Complete"
 
