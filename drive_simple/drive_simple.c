@@ -146,6 +146,6 @@ void publish_encoder_msg(){
     encoder_msg.right_delta = 0;
     encoder_msg.leftticks = enc_l_pol * rc_encoder_eqep_read(1);
     encoder_msg.rightticks = enc_r_pol * rc_encoder_eqep_read(2);
-    printf(" ENC: %lld | %lld ",encoder_msg.leftticks, encoder_msg.rightticks);
+    printf(" ENC: %lld | %lld          \r", encoder_msg.leftticks, encoder_msg.rightticks);
     mbot_encoder_t_publish(lcm, MBOT_ENCODER_CHANNEL, &encoder_msg);
 }
