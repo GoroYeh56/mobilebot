@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <getopt.h>
 
 #include <lcm/lcm.h>
 #include "../lcmtypes/mbot_encoder_t.h"
@@ -31,11 +32,48 @@ void motor_pwm_handler(const lcm_recv_buf_t *rbuf, const char *channel,
                           const mbot_motor_pwm_t *msg, void *user);
 void publish_encoder_msg();
 
+int mot_l_pol;
+int mot_r_pol;
+int enc_l_pol;
+int enc_r_pol;
+
+// printed if some invalid argument was given
+static void __print_usage(void)
+{
+        printf("\n");
+        printf("-l {pol}    polarity of left motor (-1 or 1)\n");
+        printf("-r {pol}    polarity of right motor (-1 or 1)\n");
+        printf("-le {pol}   polarity of left encoder (-1 or 1)\n");
+        printf("-re {pol}   polarity of right encoder (-1 or 1)\n");
+        printf("-h          print this help message\n");
+        printf("\n");
+}
+
 /*******************************************************************************
 * int main() 
 *
 *******************************************************************************/
-int main(){
+int main(int argc, char *argv[]){
+    //check args
+    if( argc != 5 ) {
+        printf("Usage: test_simple {left motor polarity} {right motor polarity} {left encoder polarity} {right encoder polarity}\n");
+        printf("Example: test_simple -1 1 -1 1\n");
+        return 0;
+    }
+    
+    mot_l_pol = atoi(argv[1]);
+    mot_r_pol = atoi(argv[2]);
+    enc_l_pol = atoi(argv[3]);
+    enc_r_pol = atoi(argv[4]);
+
+    if( (mot_l_pol != 1)&(mot_l_pol != -1) |
+        (mot_r_pol != 1)&(mot_r_pol != -1) |
+        (enc_l_pol != 1)&(enc_l_pol != -1) |
+        (enc_r_pol != 1)&(enc_r_pol != -1)){
+        printf("Usage: polarities must be -1 or 1");
+        return 0;
+      }
+
 	// make sure another instance isn't running
     if(rc_kill_existing_process(2.0)<-2) return -1;
 
@@ -78,8 +116,9 @@ int main(){
         {
             rc_motor_set(1,0.0);
             rc_motor_set(2,0.0);
-            printf("timeout...\n");
+            printf("timeout...\r");
         }
+        printf()
 		// define a timeout (for erroring out) and the delay time
         lcm_handle_timeout(lcm, 1);
         rc_nanosleep(1E9 / 100); //handle at 10Hz
@@ -99,9 +138,9 @@ int main(){
 *******************************************************************************/
 void motor_pwm_handler(const lcm_recv_buf_t *rbuf, const char *channel,
                           const mbot_motor_pwm_t *msg, void *user){
-    printf("CMD: %f | %f \r",msg->left_motor_pwm,msg->right_motor_pwm);
-    rc_motor_set(1,msg->left_motor_pwm);
-    rc_motor_set(2,msg->right_motor_pwm);
+    printf("PWM CMD: %f | %f ",mot_l_pol * msg->left_motor_pwm,mot_r_pol * msg->right_motor_pwm);
+    rc_motor_set(1,mot_l_pol * msg->left_motor_pwm);
+    rc_motor_set(2,mot_r_pol * msg->right_motor_pwm);
     publish_encoder_msg();
     watchdog_timer = 0.0;
 }
@@ -118,8 +157,8 @@ void publish_encoder_msg(){
     encoder_msg.utime = rc_nanos_since_epoch();
     encoder_msg.left_delta = 0;
     encoder_msg.right_delta = 0;
-    encoder_msg.leftticks = rc_encoder_eqep_read(1);
-    encoder_msg.rightticks = rc_encoder_eqep_read(2);
-    
+    encoder_msg.leftticks = enc_l_pol * rc_encoder_eqep_read(1);
+    encoder_msg.rightticks = enc_r_pol * rc_encoder_eqep_read(2);
+    printf(" ENC: %lld | %lld ",encoder_msg.leftticks, encoder_msg.rightticks);
     mbot_encoder_t_publish(lcm, MBOT_ENCODER_CHANNEL, &encoder_msg);
 }
