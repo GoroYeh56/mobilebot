@@ -37,18 +37,6 @@ int mot_r_pol;
 int enc_l_pol;
 int enc_r_pol;
 
-// printed if some invalid argument was given
-static void __print_usage(void)
-{
-        printf("\n");
-        printf("-l {pol}    polarity of left motor (-1 or 1)\n");
-        printf("-r {pol}    polarity of right motor (-1 or 1)\n");
-        printf("-le {pol}   polarity of left encoder (-1 or 1)\n");
-        printf("-re {pol}   polarity of right encoder (-1 or 1)\n");
-        printf("-h          print this help message\n");
-        printf("\n");
-}
-
 /*******************************************************************************
 * int main() 
 *
@@ -66,10 +54,10 @@ int main(int argc, char *argv[]){
     enc_l_pol = atoi(argv[3]);
     enc_r_pol = atoi(argv[4]);
 
-    if( (mot_l_pol != 1)&(mot_l_pol != -1) |
-        (mot_r_pol != 1)&(mot_r_pol != -1) |
-        (enc_l_pol != 1)&(enc_l_pol != -1) |
-        (enc_r_pol != 1)&(enc_r_pol != -1)){
+    if( ((mot_l_pol != 1)&(mot_l_pol != -1)) |
+        ((mot_r_pol != 1)&(mot_r_pol != -1)) |
+        ((enc_l_pol != 1)&(enc_l_pol != -1)) |
+        ((enc_r_pol != 1)&(enc_r_pol != -1))){
         printf("Usage: polarities must be -1 or 1");
         return 0;
       }
@@ -118,7 +106,6 @@ int main(int argc, char *argv[]){
             rc_motor_set(2,0.0);
             printf("timeout...\r");
         }
-        printf()
 		// define a timeout (for erroring out) and the delay time
         lcm_handle_timeout(lcm, 1);
         rc_nanosleep(1E9 / 100); //handle at 10Hz
