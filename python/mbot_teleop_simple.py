@@ -9,8 +9,8 @@ import sys
 sys.path.append("lcmtypes")
 import lcm
 from lcmtypes import mbot_motor_pwm_t
-FWD_PWM_CMD = 0.5
-TURN_PWM_CMD = 0.25
+FWD_PWM_CMD = 0.3
+TURN_PWM_CMD = 0.3
 
 lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=1")
 pygame.init()
@@ -47,7 +47,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     if key_input[pygame.K_DOWN]:
         fwd -= 1.0
     command = mbot_motor_pwm_t()
-    command.left_motor_pwm = -(fwd * FWD_PWM_CMD - turn * TURN_PWM_CMD)
+    command.left_motor_pwm =  fwd * FWD_PWM_CMD - turn * TURN_PWM_CMD
     command.right_motor_pwm = fwd * FWD_PWM_CMD + turn * TURN_PWM_CMD
     lc.publish("MBOT_MOTOR_PWM",command.encode())
     rawCapture.truncate(0)
