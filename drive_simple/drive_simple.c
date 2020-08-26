@@ -58,7 +58,7 @@ int main(int argc, char *argv[]){
         ((mot_r_pol != 1)&(mot_r_pol != -1)) |
         ((enc_l_pol != 1)&(enc_l_pol != -1)) |
         ((enc_r_pol != 1)&(enc_r_pol != -1))){
-        printf("Usage: polarities must be -1 or 1");
+        printf("Usage: polarities must be -1 or 1\n");
         return 0;
       }
 
