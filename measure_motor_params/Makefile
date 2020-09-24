@@ -3,14 +3,16 @@ TARGET = ../bin/measure_motor_params
 
 CC		    := gcc
 LINKER		:= gcc -o
-CFLAGS		:= -c -Wall -g
-LFLAGS		:= -lm -lrt -lpthread -l:librobotcontrol.so.1
+CFLAGS		:= -c -Wall -g `pkg-config --cflags lcm`
+LFLAGS		:= -lm -lrt -lpthread -l:librobotcontrol.so.1 -L `pkg-config --libs lcm`
 
 SOURCES		:= $(wildcard *.c)
 SOURCES		:= $(SOURCES) $(wildcard ../common/*.c)
 INCLUDES	:= $(wildcard *.h)
 INCLUDES	:= $(INCLUDES) $(wildcard ../common/*.h)
 OBJECTS		:= $(SOURCES:$%.c=$%.o)
+LCMTYPES    := $(shell find ../lcmtypes/ -name '*.lcm')                        
+LCMOBJS     := $(LCMTYPES:$%.lcm=$%.o) 
 
 prefix		:= /usr/local
 RM		    := rm -f
@@ -24,7 +26,7 @@ LINKNAME	:= link_to_startup_program
 
 # linking Objects
 $(TARGET): $(OBJECTS)
-	@$(LINKER) $@ $(OBJECTS) $(LFLAGS)
+	@$(LINKER) $@ $(OBJECTS) $(LCMOBJS) $(LFLAGS)
 
 
 # compiling command
@@ -49,6 +51,7 @@ install:
 
 clean:
 	@$(RM) $(OBJECTS)
+	@$(RM) $(LCMOBJS)
 	@$(RM) $(IGNORE)
 	@$(RM) $(IGNORE:=.o)
 	@$(RM) $(TARGET)
