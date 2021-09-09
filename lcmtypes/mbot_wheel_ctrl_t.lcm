@@ -1,0 +1,11 @@
+struct mbot_wheel_ctrl_t
+{
+    int64_t utime;
+
+    float left_motor_pwm_cmd;
+    float right_motor_pwm_cmd;
+    float left_motor_vel_cmd;
+    float right_motor_vel_cmd;
+    float left_motor_vel;
+    float right_motor_vel;
+}
