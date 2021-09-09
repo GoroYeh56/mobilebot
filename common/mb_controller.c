@@ -12,6 +12,7 @@
 
 int mb_initialize_controller(){
     mb_load_controller_config();
+    
     return 0;
 }
 
