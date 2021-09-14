@@ -18,14 +18,18 @@
 #define RIGHT_MOTOR             2     // id of right motor
 
 // TODO: Add convienient defines to define things like motor and encoder polarity here
+#define LEFT_POLARITY -1
+#define RIGHT_POLARITY 1
 
 // TODO: Fill in physical propeties of robot
-#define GEAR_RATIO              0.0  // gear ratio of motor
-#define ENCODER_RES             0.0  // encoder counts per motor shaft revolution
-#define WHEEL_DIAMETER          0.0 // diameter of wheel in meters
-#define WHEEL_BASE              0.0  // wheel separation distance in meters
+#define GEAR_RATIO              78.0  // gear ratio of motor
+#define ENCODER_RES             1560.0  // encoder counts per motor shaft revolution
+#define WHEEL_DIAMETER          0.083 // diameter of wheel in meters
+#define WHEEL_BASE              0.18  // wheel separation distance in meters
 #define MAX_FWD_VEL             0.8   // maximum forwad speed (m/s)
 #define MAX_TURN_VEL            2.5   // maximum turning speed (rad/s)
+// #define CFG_PATH                "../pid_params.yaml"
+
 
 // These rates are set to defaults - can be changed
 #define SAMPLE_RATE_HZ          50   // main filter and control loop speed

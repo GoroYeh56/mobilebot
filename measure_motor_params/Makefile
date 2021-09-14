@@ -11,7 +11,7 @@ SOURCES		:= $(SOURCES) $(wildcard ../common/*.c)
 INCLUDES	:= $(wildcard *.h)
 INCLUDES	:= $(INCLUDES) $(wildcard ../common/*.h)
 OBJECTS		:= $(SOURCES:$%.c=$%.o)
-
+# Note: .c / .cpp => link libraries: .o (object files) => binary files.(executables)
 prefix		:= /usr/local
 RM		    := rm -f
 INSTALL		:= install -m 4755
@@ -32,6 +32,7 @@ $(OBJECTS): %.o : %.c $(INCLUDES)
 	@$(CC) $(CFLAGS) -c $< -o $(@)
 	@echo "Compiled: "$<
 
+#  make all is the same as make
 all: 
 	$(TARGET)
 

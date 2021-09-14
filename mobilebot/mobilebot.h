@@ -36,6 +36,8 @@
 #include "../lcmtypes/oled_message_t.h"
 #include "../lcmtypes/timestamp_t.h"
 #include "../lcmtypes/reset_odometry_t.h"
+#include "../lcmtypes/mbot_wheel_ctrl_t.h"
+
 
 #include "../common/mb_defs.h"
 #include "../common/mb_structs.h"
@@ -49,6 +51,9 @@ rc_mpu_data_t imu_data;
 pthread_mutex_t state_mutex;
 mb_state_t mb_state;
 mb_setpoints_t mb_setpoints;
+rc_filter_t left_vel_pid_filter;
+rc_filter_t right_vel_pid_filter;
+
 mb_odometry_t mb_odometry;
 int64_t now;
 int64_t time_offset;

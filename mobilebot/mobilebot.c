@@ -85,8 +85,10 @@ int main(){
     rc_encoder_init();
     rc_encoder_write(1, 0);
     rc_encoder_write(2, 0);
+    // mb_odometry.c
 	mb_initialize_odometry(&mb_odometry, 0.0,0.0,0.0);
 
+    // This is the main function for mb_controller.c
 	printf("attaching imu interupt...\n");
 	rc_mpu_set_dmp_callback(&mobilebot_controller);
 
@@ -128,6 +130,21 @@ int main(){
 * TODO: modify this function to read other sensors
 * 
 *******************************************************************************/
+#define ENC_CNTS 20
+#define PI 3.14159
+// Call every 'time_offset' KEY : time_offset DT is float (0.2)
+float ticks_to_speed(int number_of_ticks, float time_offset){
+    float speed = 0;
+    float wheel_rps = 0;
+    float mps = 0;
+    speed = number_of_ticks / time_offset; // ( sampling perios // ticks per second
+    wheel_rps = speed / (GEAR_RATIO*ENC_CNTS);    // wheel revs per second
+    mps = wheel_rps * WHEEL_DIAMETER * PI;        // (m/s) or the robot (circumference = 2*PI*r)
+    return mps;
+    // return speed; (m/s)
+}
+
+
 void read_mb_sensors(){
     pthread_mutex_lock(&state_mutex); 
     // Read IMU
@@ -151,7 +168,10 @@ void read_mb_sensors(){
     mb_state.right_encoder_total += mb_state.right_encoder_delta;
     rc_encoder_write(LEFT_MOTOR,0);
     rc_encoder_write(RIGHT_MOTOR,0);
-
+    
+    /////// Calculate mb_state.left_velocity here (floating pts error)
+    mb_state.left_velocity =  ticks_to_speed(mb_state.left_encoder_delta, DT);
+    mb_state.right_velocity = ticks_to_speed(mb_state.right_encoder_delta, DT);
     //unlock state mutex
     pthread_mutex_unlock(&state_mutex);
 
@@ -166,7 +186,14 @@ void read_mb_sensors(){
 void publish_mb_msgs(){
     mbot_imu_t imu_msg;
     mbot_encoder_t encoder_msg;
-//  odometry_t odo_msg;
+    odometry_t odo_msg;
+    mbot_wheel_ctrl_t wheel_ctrl_msg;
+    // mbot_motor_command_t motor_cmd_msg;
+    /*
+        float x;        //x position from initialization in m
+        float y;        //y position from initialization in m
+        float theta; 
+    */
 
     //Create IMU LCM Message
     imu_msg.utime = now;
@@ -186,11 +213,28 @@ void publish_mb_msgs(){
     encoder_msg.rightticks = mb_state.right_encoder_total;
 
     //TODO: Create Odometry LCM message
+    odo_msg.utime = now;
+    odo_msg.x = mb_state.opti_x;
+    odo_msg.y = mb_state.opti_y;
+    odo_msg.theta = mb_state.opti_theta;
+
+
+    // Publish motor msgs
+    wheel_ctrl_msg.utime = now;
+    wheel_ctrl_msg.left_motor_pwm_cmd = mb_state.left_cmd;
+    wheel_ctrl_msg.right_motor_pwm_cmd = mb_state.left_cmd;
+    wheel_ctrl_msg.left_motor_vel_cmd = mb_setpoints.fwd_velocity;
+    wheel_ctrl_msg.right_motor_vel_cmd = mb_setpoints.fwd_velocity;
+    wheel_ctrl_msg.left_motor_vel = mb_state.left_velocity;
+    wheel_ctrl_msg.right_motor_vel = mb_state.right_velocity;
+
 
     //publish IMU & Encoder Data to LCM
     mbot_imu_t_publish(lcm, MBOT_IMU_CHANNEL, &imu_msg);
     mbot_encoder_t_publish(lcm, MBOT_ENCODER_CHANNEL, &encoder_msg);
-//  odometry_t_publish(lcm, ODOMETRY_CHANNEL, &odo_msg);
+    odometry_t_publish(lcm, ODOMETRY_CHANNEL, &odo_msg);
+    mbot_wheel_ctrl_t_publish(lcm, "MBOT_WHEEL_CTRL_CHANNEL", &wheel_ctrl_msg);
+    // mbot_motor_command_t_publish(lcm, MBOT_MOTOR_COMMAND_CHANNEL, &wheel_ctrl_msg);
 }
 
 /*******************************************************************************
@@ -206,11 +250,22 @@ void publish_mb_msgs(){
 * 
 *
 *******************************************************************************/
+
+#define left_channel 1
+#define right_channel 2
+
+
 void mobilebot_controller(){
     update_now();
+    // get mb_state.left/right velocity from read_mb_sensors();
     read_mb_sensors();
+    // Controller Update Commands
+    mb_controller_update(&mb_state, &mb_setpoints);  
+    // Drive motors
+    rc_motor_set(LEFT_MOTOR, LEFT_POLARITY * mb_state.left_cmd );
+    rc_motor_set(RIGHT_MOTOR, RIGHT_POLARITY * mb_state.right_cmd);
+    // publish some info (odometry) to RPi
     publish_mb_msgs();
-
 }
 
 
@@ -241,7 +296,7 @@ void timesync_handler(const lcm_recv_buf_t * rbuf, const char *channel,
 
 
 /*******************************************************************************
-*  motor_command_handler()
+* motor_command_handler()
 *
 * sets motor velocity setpoints from incoming lcm message
 *
