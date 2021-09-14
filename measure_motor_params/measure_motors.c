@@ -24,7 +24,7 @@
 
 float enc2meters = (WHEEL_DIAMETER * M_PI) / (GEAR_RATIO * ENCODER_RES);
 
-void test_speed(float du, float dtime_s);
+void test_speed(char filename1[], char filename2[], int direction);
 
 /*******************************************************************************
 * int main() 
@@ -78,11 +78,46 @@ int main(){
 	}
 	
 	// TODO: Plase exit routine here
+    test_speed("leftBackward.txt", "rightBackward.txt", -1);
 
     // remove pid file LAST
 	rc_remove_pid_file();   
 	return 0;
 }
 
-void test_speed(float duty, float dtime_s){
+void test_speed(char filename1[], char filename2[], int direction){
+    rc_encoder_eqep_init(); // initialize subsystems
+    rc_motor_init();
+    FILE *f1 = fopen(filename1, "w");
+    FILE *f2 = fopen(filename2, "w");
+    if (f1 == NULL || f2 == NULL)
+    {
+        printf("Error opening file!\n");
+        exit(1);
+    }
+
+    for(float pwm = 0.0; pwm <= 1.0 ;pwm += 0.05)
+    {
+        rc_motor_set(LEFT_MOTOR, LEFT_MOTOR_POLAR * pwm * direction); // set motor command
+        rc_motor_set(RIGHT_MOTOR, RIGHT_MOTOR_POLAR * pwm * direction); // set motor command
+        rc_nanosleep(2E8); // give time to reach steady state
+        rc_encoder_eqep_write(LEFT_MOTOR,0); // reset encoder
+        rc_encoder_eqep_write(RIGHT_MOTOR,0); // reset encoder
+        rc_nanosleep(1E9); // measure for 1s
+        int LeftTicks = rc_encoder_eqep_read(LEFT_MOTOR); // read encoder
+        float LeftSpeed = enc2meters * LeftTicks * LEFT_ENC_POLAR; // convert to speed in rpm or rad/sec
+        int RightTicks = rc_encoder_eqep_read(RIGHT_MOTOR); // read encoder
+        float RightSpeed = enc2meters * RightTicks * RIGHT_ENC_POLAR; // convert to speed in rpm or rad/sec
+        fprintf(f1, "%f,%f\n", pwm, LeftSpeed); // print to terminal
+        fprintf(f2, "%f,%f\n", pwm, RightSpeed); // print to terminal
+        printf("%f,%f\n", pwm, LeftSpeed);
+        printf("%f,%f\n", pwm, RightSpeed);
+    }
+    fclose(f1);
+    fclose(f2);
+    rc_motor_set(LEFT_MOTOR,0.0); // cleanup
+    rc_motor_set(RIGHT_MOTOR,0.0); // cleanup
+    rc_encoder_eqep_cleanup();
+    rc_motor_cleanup();
+    return;
 }
