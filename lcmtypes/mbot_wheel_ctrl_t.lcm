@@ -1,5 +1,5 @@
-struct mbot_wheel_ctrl_t {
-
+struct mbot_wheel_ctrl_t
+{
     int64_t utime;
 
     float left_motor_pwm_cmd;

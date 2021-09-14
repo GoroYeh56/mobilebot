@@ -80,7 +80,7 @@ int main(int argc, char** argv){
     }
 #endif
 
-    if(rc_encoder_init()<0){
+    if(rc_encoder_eqep_init()<0){
         fprintf(stderr,"ERROR: failed to initialze encoders\n");
         return -1;
     }
@@ -96,6 +96,7 @@ int main(int argc, char** argv){
 
 	if(rc_get_state()==RUNNING){
 		rc_nanosleep(1E9); //sleep for 1s
+        //TODO: write routine here
 	}
 	
 	// TODO: Plase exit routine here
