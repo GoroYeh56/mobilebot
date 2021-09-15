@@ -11,8 +11,13 @@
 *******************************************************************************/
 
 int mb_initialize_controller(){
-    mb_load_controller_config();
-    
+    // mb_load_controller_config();
+    left_wheel_velocity_pid = rc_filter_empty();
+    right_wheel_velocity_pid = rc_filter_empty();
+    rc_filter_pid(&left_wheel_velocity_pid, 1.0 ,0.0, 0.0, 0.1, DT);
+    rc_filter_pid(&right_wheel_velocity_pid, 1.0 ,0.0, 0.0, 0.1, DT);
+    rc_filter_enable_saturation(&left_wheel_velocity_pid, -1.0, 1.0);
+    rc_filter_enable_saturation(&right_wheel_velocity_pid, -1.0, 1.0);
     return 0;
 }
 
@@ -62,6 +67,10 @@ int mb_load_controller_config(){
 *******************************************************************************/
 
 int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints){  
+    float left_error = mb_setpoints->fwd_velocity - mb_state->left_velocity ;
+    float right_error = mb_setpoints->fwd_velocity - mb_state->right_velocity;
+    mb_state->left_cmd = rc_filter_march(&left_wheel_velocity_pid, left_error);
+    mb_state->right_cmd = rc_filter_march(&right_wheel_velocity_pid, right_error);
     return 0;
 }
 
@@ -76,5 +85,7 @@ int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints){
 *******************************************************************************/
 
 int mb_destroy_controller(){
+    rc_filter_free(&left_wheel_velocity_pid);
+    rc_filter_free(&right_wheel_velocity_pid);
     return 0;
 }

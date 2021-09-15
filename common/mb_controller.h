@@ -17,6 +17,9 @@ int mb_destroy_controller();
 * rc_filter_t fwd_vel_sp_lpf;
 *************/
 
+rc_filter_t left_wheel_velocity_pid;
+rc_filter_t right_wheel_velocity_pid;
+
 /***********
 * For each PID filter you want to load from settings
 * add a pid_parameter_t or filter_parameter_t

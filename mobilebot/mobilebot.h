@@ -32,6 +32,7 @@
 #include "../lcmtypes/mbot_encoder_t.h"
 #include "../lcmtypes/mbot_imu_t.h"
 #include "../lcmtypes/mbot_motor_command_t.h"
+#include "../lcmtypes/mbot_wheel_ctrl_t.h"
 #include "../lcmtypes/odometry_t.h"
 #include "../lcmtypes/oled_message_t.h"
 #include "../lcmtypes/timestamp_t.h"

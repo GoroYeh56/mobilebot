@@ -145,12 +145,17 @@ void read_mb_sensors(){
     }
 
     // Read encoders    
-    mb_state.left_encoder_delta = rc_encoder_read(LEFT_MOTOR);
-    mb_state.right_encoder_delta = rc_encoder_read(RIGHT_MOTOR);
+    mb_state.left_encoder_delta = rc_encoder_read(LEFT_MOTOR) * LEFT_ENC_POLAR;
+    mb_state.right_encoder_delta = rc_encoder_read(RIGHT_MOTOR) * RIGHT_ENC_POLAR;
     mb_state.left_encoder_total += mb_state.left_encoder_delta;
     mb_state.right_encoder_total += mb_state.right_encoder_delta;
     rc_encoder_write(LEFT_MOTOR,0);
     rc_encoder_write(RIGHT_MOTOR,0);
+
+    float enc2meters = (WHEEL_DIAMETER * 3.1415) / (GEAR_RATIO * ENCODER_RES);
+    mb_state.left_velocity = enc2meters * mb_state.left_encoder_delta / DT;
+    mb_state.right_velocity = enc2meters * mb_state.right_encoder_delta / DT;
+
 
     //unlock state mutex
     pthread_mutex_unlock(&state_mutex);
@@ -166,6 +171,7 @@ void read_mb_sensors(){
 void publish_mb_msgs(){
     mbot_imu_t imu_msg;
     mbot_encoder_t encoder_msg;
+    mbot_wheel_ctrl_t wheel_ctrl_msg;
 //  odometry_t odo_msg;
 
     //Create IMU LCM Message
@@ -185,11 +191,21 @@ void publish_mb_msgs(){
     encoder_msg.leftticks = mb_state.left_encoder_total;
     encoder_msg.rightticks = mb_state.right_encoder_total;
 
+    wheel_ctrl_msg.utime = now;
+    wheel_ctrl_msg.left_motor_pwm_cmd = mb_state.left_cmd;
+    wheel_ctrl_msg.right_motor_pwm_cmd = mb_state.right_cmd;
+    wheel_ctrl_msg.left_motor_vel_cmd = mb_setpoints.fwd_velocity;
+    wheel_ctrl_msg.right_motor_vel_cmd = mb_setpoints.fwd_velocity;
+    wheel_ctrl_msg.left_motor_vel = mb_state.left_velocity;
+    wheel_ctrl_msg.right_motor_vel = mb_state.right_velocity;
+
+
     //TODO: Create Odometry LCM message
 
     //publish IMU & Encoder Data to LCM
     mbot_imu_t_publish(lcm, MBOT_IMU_CHANNEL, &imu_msg);
     mbot_encoder_t_publish(lcm, MBOT_ENCODER_CHANNEL, &encoder_msg);
+    mbot_wheel_ctrl_t_publish(lcm, "MBOT_WHEEL_CTRL", &wheel_ctrl_msg);
 //  odometry_t_publish(lcm, ODOMETRY_CHANNEL, &odo_msg);
 }
 
@@ -209,7 +225,10 @@ void publish_mb_msgs(){
 void mobilebot_controller(){
     update_now();
     read_mb_sensors();
+    mb_controller_update(&mb_state, &mb_setpoints);
     publish_mb_msgs();
+    rc_motor_set(LEFT_MOTOR, LEFT_MOTOR_POLAR * mb_state.left_cmd);
+    rc_motor_set(RIGHT_MOTOR, RIGHT_MOTOR_POLAR * mb_state.right_cmd);
 
 }
 

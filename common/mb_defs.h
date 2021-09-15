@@ -14,14 +14,14 @@
 //#define MRC_VERSION_2v1
 #define BEAGLEBONE_BLUE
 #define DEFAULT_PWM_FREQ        25000 // period of motor drive pwm
-#define LEFT_MOTOR              1     // id of left motor
-#define RIGHT_MOTOR             2     // id of right motor
+#define LEFT_MOTOR              2     // id of left motor
+#define RIGHT_MOTOR             1     // id of right motor
 
 // TODO: Add convienient defines to define things like motor and encoder polarity here
-#define LEFT_MOTOR_POLAR	 -1
-#define RIGHT_MOTOR_POLAR	 1
-#define LEFT_ENC_POLAR		 1
-#define RIGHT_ENC_POLAR	 -1
+#define LEFT_MOTOR_POLAR	    1
+#define RIGHT_MOTOR_POLAR	    -1
+#define LEFT_ENC_POLAR		    -1
+#define RIGHT_ENC_POLAR	        1
 // TODO: Fill in physical propeties of robot
 #define GEAR_RATIO              78.0  // gear ratio of motor
 #define ENCODER_RES             20.0  // encoder counts per motor shaft revolution
