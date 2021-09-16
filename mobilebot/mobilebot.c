@@ -172,7 +172,7 @@ void publish_mb_msgs(){
     mbot_imu_t imu_msg;
     mbot_encoder_t encoder_msg;
     mbot_wheel_ctrl_t wheel_ctrl_msg;
-//  odometry_t odo_msg;
+    odometry_t odo_msg;
 
     //Create IMU LCM Message
     imu_msg.utime = now;
@@ -201,12 +201,16 @@ void publish_mb_msgs(){
 
 
     //TODO: Create Odometry LCM message
+    odo_msg.utime = now;
+    odo_msg.x = mb_odometry.x;
+    odo_msg.y = mb_odometry.y;
+    odo_msg.theta = mb_odometry.theta;
 
     //publish IMU & Encoder Data to LCM
     mbot_imu_t_publish(lcm, MBOT_IMU_CHANNEL, &imu_msg);
     mbot_encoder_t_publish(lcm, MBOT_ENCODER_CHANNEL, &encoder_msg);
     mbot_wheel_ctrl_t_publish(lcm, "MBOT_WHEEL_CTRL", &wheel_ctrl_msg);
-//  odometry_t_publish(lcm, ODOMETRY_CHANNEL, &odo_msg);
+    odometry_t_publish(lcm, ODOMETRY_CHANNEL, &odo_msg);
 }
 
 /*******************************************************************************
@@ -226,6 +230,7 @@ void mobilebot_controller(){
     update_now();
     read_mb_sensors();
     mb_controller_update(&mb_state, &mb_setpoints);
+    mb_update_odometry(&mb_odometry, &mb_state);
     publish_mb_msgs();
     rc_motor_set(LEFT_MOTOR, LEFT_MOTOR_POLAR * mb_state.left_cmd);
     rc_motor_set(RIGHT_MOTOR, RIGHT_MOTOR_POLAR * mb_state.right_cmd);
