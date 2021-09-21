@@ -14,7 +14,17 @@
 * int main() 
 *
 *******************************************************************************/
-int main(){
+
+int main( int argc, char** argv){
+
+
+    if(argc != 2){
+        printf("Wrong input format. ./mobilebot <control_mode>\n");
+        return 0;
+    }
+    // printf("%c\n", argv[1][1]);
+    strcpy(mode, argv[1]);
+    // mode = argv[1];
 
     rc_led_set(RC_LED_GREEN, LED_OFF);
     rc_led_set(RC_LED_RED, LED_ON);
@@ -162,8 +172,8 @@ void read_mb_sensors(){
     }
 
     // Read encoders    
-    mb_state.left_encoder_delta = rc_encoder_read(LEFT_MOTOR);
-    mb_state.right_encoder_delta = rc_encoder_read(RIGHT_MOTOR);
+    mb_state.left_encoder_delta = LEFT_ENCODER_POLARITY *rc_encoder_read(LEFT_MOTOR);
+    mb_state.right_encoder_delta = RIGHT_ENCODER_POLARITY *rc_encoder_read(RIGHT_MOTOR);
     mb_state.left_encoder_total += mb_state.left_encoder_delta;
     mb_state.right_encoder_total += mb_state.right_encoder_delta;
     rc_encoder_write(LEFT_MOTOR,0);
@@ -233,8 +243,8 @@ void publish_mb_msgs(){
     mbot_imu_t_publish(lcm, MBOT_IMU_CHANNEL, &imu_msg);
     mbot_encoder_t_publish(lcm, MBOT_ENCODER_CHANNEL, &encoder_msg);
     odometry_t_publish(lcm, ODOMETRY_CHANNEL, &odo_msg);
-    mbot_wheel_ctrl_t_publish(lcm, "MBOT_WHEEL_CTRL_CHANNEL", &wheel_ctrl_msg);
-    // mbot_motor_command_t_publish(lcm, MBOT_MOTOR_COMMAND_CHANNEL, &wheel_ctrl_msg);
+    mbot_wheel_ctrl_t_publish(lcm, "MBOT_WHEEL_CTRL", &wheel_ctrl_msg);
+
 }
 
 /*******************************************************************************
@@ -254,13 +264,23 @@ void publish_mb_msgs(){
 #define left_channel 1
 #define right_channel 2
 
-
+//  OPEN_LOOP: 0, PID_CONTROL=1
+// enum MODE{ OPEN_LOOP, PID_CONTROL};
+// enum MODE mode;
+#define OPEN_LOOP "openloop"
+#define PID_CONTROL "pid"
 void mobilebot_controller(){
     update_now();
     // get mb_state.left/right velocity from read_mb_sensors();
     read_mb_sensors();
+
     // Controller Update Commands
-    mb_controller_update(&mb_state, &mb_setpoints);  
+
+
+    if(strcmp(mode, OPEN_LOOP))
+        mb_controller_openloop(&mb_state, &mb_setpoints);
+    else
+        mb_controller_update(&mb_state, &mb_setpoints);  
     // Drive motors
     rc_motor_set(LEFT_MOTOR, LEFT_POLARITY * mb_state.left_cmd );
     rc_motor_set(RIGHT_MOTOR, RIGHT_POLARITY * mb_state.right_cmd);

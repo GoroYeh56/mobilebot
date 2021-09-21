@@ -9,7 +9,7 @@
 * return 0 on success
 *
 *******************************************************************************/
-struct pid_parameters pid_params;
+
 
 
 /*
@@ -33,8 +33,8 @@ int mb_initialize_controller(){
     mb_load_controller_config();
     left_vel_pid_filter = rc_filter_empty();
     right_vel_pid_filter = rc_filter_empty();
-    rc_filter_pid(&left_vel_pid_filter, pid_params.kp, pid_params.ki, pid_params.kd, 0.1,DT );
-    rc_filter_pid(&right_vel_pid_filter,  pid_params.kp, pid_params.ki, pid_params.kd,  0.1,DT );
+    rc_filter_pid(&left_vel_pid_filter, pid_params.kp, pid_params.ki, pid_params.kd, pid_params.dFilterHz,DT );
+    rc_filter_pid(&right_vel_pid_filter,  pid_params.kp, pid_params.ki, pid_params.kd, pid_params.dFilterHz,DT );
     rc_filter_enable_saturation(&left_vel_pid_filter, -1.0, 1.0);
     rc_filter_enable_saturation(&right_vel_pid_filter, -1.0, 1.0);
     return 0;
@@ -118,14 +118,43 @@ int mb_load_controller_config(){
     // float left_last_err, right_last_err;
 */
 
+void mb_controller_openloop(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints){
+
+  /*
+    Left motor :1.09*x + -0.0399
+    Right motor:1.08*x + -0.0171
+  */ 
+  float v = mb_setpoints->fwd_velocity;
+  float w = mb_setpoints->turn_velocity;
+  float left_vel_cmd = v - w * (WHEEL_BASE/2);
+  float right_vel_cmd = v + w * (WHEEL_BASE/2);
+  mb_state->left_cmd  =  (left_vel_cmd+0.0399)/1.09;
+  mb_state->right_cmd  = (right_vel_cmd+0.0171)/1.08;
+
+}
+
 
 int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints){  
 
   // simply march it!
-  float left_error = mb_setpoints->fwd_velocity - mb_state->left_velocity;
-  float right_error = mb_setpoints->fwd_velocity - mb_state->right_velocity;
-  mb_state->left_cmd  = rc_filter_march( &left_vel_pid_filter, left_error);
-  mb_state->right_cmd  = rc_filter_march( &right_vel_pid_filter, right_error);
+  // TODO : 1.5 Covert fwd, turn to left/right wheel velocity.
+  float v = mb_setpoints->fwd_velocity;
+  float w = mb_setpoints->turn_velocity;
+  float left_vel_cmd = v - w * (WHEEL_BASE/2);
+  float right_vel_cmd = v + w * (WHEEL_BASE/2);
+  float left_error = left_vel_cmd - mb_state->left_velocity;
+  float right_error = right_vel_cmd - mb_state->right_velocity;
+  
+  //Convert the 'speed' command to corresponding 'pwm' signals
+  /*
+    Left motor :1.09*x + -0.0399
+    Right motor:1.08*x + -0.0171
+  */
+ 
+  // TODO :Add filter
+  // Note: left should * -1 to make it 'forwradr!'
+  mb_state->left_cmd  = rc_filter_march( &left_vel_pid_filter, left_error); //+0.0399)/1.09;
+  mb_state->right_cmd  = rc_filter_march( &right_vel_pid_filter, right_error); //+0.0171)/1.08;
 
 /*
     Kp = pid_params.kp;
@@ -212,6 +241,8 @@ int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints){
 int mb_destroy_controller(){
 
     // Free filters
+    rc_filter_free(&left_vel_pid_filter);
+    rc_filter_free(&right_vel_pid_filter);
 
     return 0;
 }

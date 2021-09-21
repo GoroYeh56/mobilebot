@@ -18,8 +18,10 @@
 #define RIGHT_MOTOR             2     // id of right motor
 
 // TODO: Add convienient defines to define things like motor and encoder polarity here
-#define LEFT_POLARITY -1
-#define RIGHT_POLARITY 1
+#define LEFT_POLARITY 1  // Left polarity should be one to move forward
+#define RIGHT_POLARITY -1
+#define LEFT_ENCODER_POLARITY -1
+#define RIGHT_ENCODER_POLARITY 1
 
 // TODO: Fill in physical propeties of robot
 #define GEAR_RATIO              78.0  // gear ratio of motor

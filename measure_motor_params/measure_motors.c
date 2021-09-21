@@ -108,8 +108,9 @@ int main(int argc, char** argv){
     printf("Done Calibration.\n");
 
     // char filename[30] = "1.1.txt";
-    
-    // char filename[30] = argv[1];
+
+    // char filename[30] = argv[1]; 
+    // char* 
     Write_Output_File(speed_left, speed_right, argv[1]);
 
 

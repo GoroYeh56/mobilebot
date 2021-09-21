@@ -51,8 +51,10 @@ rc_mpu_data_t imu_data;
 pthread_mutex_t state_mutex;
 mb_state_t mb_state;
 mb_setpoints_t mb_setpoints;
-rc_filter_t left_vel_pid_filter;
-rc_filter_t right_vel_pid_filter;
+
+// enum MODE{ OPEN_LOOP, PID_CONTROL};
+// enum MODE mode;
+char mode[20];
 
 mb_odometry_t mb_odometry;
 int64_t now;
