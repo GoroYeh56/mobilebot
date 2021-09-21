@@ -38,16 +38,32 @@ void mb_update_odometry(mb_odometry_t* mb_odometry, mb_state_t* mb_state){
     float left_delta_s = WHEEL_DIAMETER * left_encoder_delta_theta;
     float right_delta_s = WHEEL_DIAMETER * right_encoder_delta_theta;
 
-    float delta_theta = (right_delta_s - left_delta_s) / 2;
+    float delta_theta = (right_delta_s - left_delta_s) / WHEEL_BASE;
+    // delta_theta = mb_clamp_radians(delta_theta);
     float delta_d = (right_delta_s + left_delta_s) / 2;
     float delta_x = delta_d * cos(mb_odometry->theta + delta_theta / 2);
     float delta_y = delta_d * sin(mb_odometry->theta + delta_theta / 2);
+    float delta_gyro = mb_state->tb_angles[2] - mb_state->last_yaw;
+
+
 
     mb_odometry->x = mb_odometry->x + delta_x;
     mb_odometry->y = mb_odometry->y + delta_y;
-    mb_odometry->theta = mb_odometry->theta + delta_theta;
+
+    //update gyro
+    float angle_threshold = (0.01 / 180) * PI;
+    float angle_diff = mb_angle_diff_radians(delta_theta, delta_gyro);
+    // printf("%f\n", fabs(angle_diff));
+    if(fabs(angle_diff) > angle_threshold){
+        mb_odometry->theta = mb_clamp_radians(mb_odometry->theta + delta_gyro);
+    }
+    else{
+        mb_odometry->theta = mb_clamp_radians(mb_odometry->theta + delta_theta);
+    }
+
     // printf("x: %f, y: %f, theta: %f\n", mb_odometry->x, mb_odometry->y, mb_odometry->theta);
 }
+
 
 
 /*******************************************************************************
