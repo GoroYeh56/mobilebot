@@ -196,14 +196,8 @@ void read_mb_sensors(){
 void publish_mb_msgs(){
     mbot_imu_t imu_msg;
     mbot_encoder_t encoder_msg;
-    odometry_t odo_msg;
     mbot_wheel_ctrl_t wheel_ctrl_msg;
-    // mbot_motor_command_t motor_cmd_msg;
-    /*
-        float x;        //x position from initialization in m
-        float y;        //y position from initialization in m
-        float theta; 
-    */
+    odometry_t odo_msg;
 
     //Create IMU LCM Message
     imu_msg.utime = now;
@@ -222,8 +216,18 @@ void publish_mb_msgs(){
     encoder_msg.leftticks = mb_state.left_encoder_total;
     encoder_msg.rightticks = mb_state.right_encoder_total;
 
+    wheel_ctrl_msg.utime = now;
+    wheel_ctrl_msg.left_motor_pwm_cmd = mb_state.left_cmd;
+    wheel_ctrl_msg.right_motor_pwm_cmd = mb_state.right_cmd;
+    wheel_ctrl_msg.left_motor_vel_cmd = mb_setpoints.fwd_velocity;
+    wheel_ctrl_msg.right_motor_vel_cmd = mb_setpoints.fwd_velocity;
+    wheel_ctrl_msg.left_motor_vel = mb_state.left_velocity;
+    wheel_ctrl_msg.right_motor_vel = mb_state.right_velocity;
+
+
     //TODO: Create Odometry LCM message
     odo_msg.utime = now;
+<<<<<<< HEAD
     odo_msg.x = mb_state.opti_x;
     odo_msg.y = mb_state.opti_y;
     odo_msg.theta = mb_state.opti_theta;
@@ -238,13 +242,23 @@ void publish_mb_msgs(){
     wheel_ctrl_msg.left_motor_vel = mb_state.left_velocity;
     wheel_ctrl_msg.right_motor_vel = mb_state.right_velocity;
 
+=======
+    odo_msg.x = mb_odometry.x;
+    odo_msg.y = mb_odometry.y;
+    odo_msg.theta = mb_odometry.theta;
+>>>>>>> e471009b68bf42086781ee0946891346e8e45442
 
     //publish IMU & Encoder Data to LCM
     mbot_imu_t_publish(lcm, MBOT_IMU_CHANNEL, &imu_msg);
     mbot_encoder_t_publish(lcm, MBOT_ENCODER_CHANNEL, &encoder_msg);
+<<<<<<< HEAD
     odometry_t_publish(lcm, ODOMETRY_CHANNEL, &odo_msg);
     mbot_wheel_ctrl_t_publish(lcm, "MBOT_WHEEL_CTRL", &wheel_ctrl_msg);
 
+=======
+    mbot_wheel_ctrl_t_publish(lcm, "MBOT_WHEEL_CTRL", &wheel_ctrl_msg);
+    odometry_t_publish(lcm, ODOMETRY_CHANNEL, &odo_msg);
+>>>>>>> e471009b68bf42086781ee0946891346e8e45442
 }
 
 /*******************************************************************************
@@ -273,6 +287,14 @@ void mobilebot_controller(){
     update_now();
     // get mb_state.left/right velocity from read_mb_sensors();
     read_mb_sensors();
+<<<<<<< HEAD
+=======
+    mb_controller_update(&mb_state, &mb_setpoints);
+    mb_update_odometry(&mb_odometry, &mb_state);
+    publish_mb_msgs();
+    rc_motor_set(LEFT_MOTOR, LEFT_MOTOR_POLAR * mb_state.left_cmd);
+    rc_motor_set(RIGHT_MOTOR, RIGHT_MOTOR_POLAR * mb_state.right_cmd);
+>>>>>>> e471009b68bf42086781ee0946891346e8e45442
 
     // Controller Update Commands
 

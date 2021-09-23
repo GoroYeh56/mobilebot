@@ -14,8 +14,8 @@
 //#define MRC_VERSION_2v1
 #define BEAGLEBONE_BLUE
 #define DEFAULT_PWM_FREQ        25000 // period of motor drive pwm
-#define LEFT_MOTOR              1     // id of left motor
-#define RIGHT_MOTOR             2     // id of right motor
+#define LEFT_MOTOR              2     // id of left motor
+#define RIGHT_MOTOR             1     // id of right motor
 
 // TODO: Add convienient defines to define things like motor and encoder polarity here
 #define LEFT_POLARITY 1  // Left polarity should be one to move forward

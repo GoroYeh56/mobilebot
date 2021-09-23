@@ -21,8 +21,8 @@ struct mb_state{
     
     float fwd_velocity;
     float turn_velocity;
-    float left_velocity;
-    float right_velocity;
+    float left_velocity;   //wheel velocity in m/s
+    float right_velocity;   //wheel velocity in m/s
 
     float opti_x;               // Optitrack coordinates 
     float opti_y;               // (if using optitrack for ground truth)
