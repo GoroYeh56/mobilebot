@@ -53,9 +53,13 @@ struct mb_odometry{
 
 typedef struct pid_parameters pid_parameters_t;
 struct pid_parameters {
-    float kp;
-    float ki;
-    float kd;
+    float lkp;
+    float lki;
+    float lkd;
+    float rkp;
+    float rki;
+    float rkd;
+
     float dFilterHz;
     float out_lim;
     float int_lim;

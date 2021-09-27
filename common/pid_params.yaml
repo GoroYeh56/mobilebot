@@ -1,6 +1,9 @@
-kp: 3.2
-ki: 12.0
-kd: 0.008
-dFilterHz: 0.4 #0.1
+lkp: 3.5
+lki: 18.0
+lkd: 0.008
+rkp: 3.5
+rki: 18.0
+rkd: 0.008
+dFilterHz: 0.1
 # Note: Tf should >= dt/2 for stability
 # DT = 0.02, Tf should >= 0.01

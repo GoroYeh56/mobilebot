@@ -219,46 +219,39 @@ void publish_mb_msgs(){
     wheel_ctrl_msg.utime = now;
     wheel_ctrl_msg.left_motor_pwm_cmd = mb_state.left_cmd;
     wheel_ctrl_msg.right_motor_pwm_cmd = mb_state.right_cmd;
-    wheel_ctrl_msg.left_motor_vel_cmd = mb_setpoints.fwd_velocity;
-    wheel_ctrl_msg.right_motor_vel_cmd = mb_setpoints.fwd_velocity;
+    
+    float v = mb_setpoints.fwd_velocity;
+    float w = mb_setpoints.turn_velocity;
+    float left_vel_cmd = v - w * (WHEEL_BASE/2);
+    float right_vel_cmd = v + w * (WHEEL_BASE/2);
+    // printf("\r%f %f\n", left_vel_cmd, right_vel_cmd);
+    wheel_ctrl_msg.left_motor_vel_cmd = left_vel_cmd;
+    wheel_ctrl_msg.right_motor_vel_cmd = right_vel_cmd;
     wheel_ctrl_msg.left_motor_vel = mb_state.left_velocity;
     wheel_ctrl_msg.right_motor_vel = mb_state.right_velocity;
 
 
     //TODO: Create Odometry LCM message
     odo_msg.utime = now;
-<<<<<<< HEAD
-    odo_msg.x = mb_state.opti_x;
-    odo_msg.y = mb_state.opti_y;
-    odo_msg.theta = mb_state.opti_theta;
+    odo_msg.x = mb_odometry.x; 
+    odo_msg.y = mb_odometry.y;
+    odo_msg.theta = mb_odometry.theta;
 
 
     // Publish motor msgs
     wheel_ctrl_msg.utime = now;
     wheel_ctrl_msg.left_motor_pwm_cmd = mb_state.left_cmd;
-    wheel_ctrl_msg.right_motor_pwm_cmd = mb_state.left_cmd;
-    wheel_ctrl_msg.left_motor_vel_cmd = mb_setpoints.fwd_velocity;
-    wheel_ctrl_msg.right_motor_vel_cmd = mb_setpoints.fwd_velocity;
+    wheel_ctrl_msg.right_motor_pwm_cmd = mb_state.right_cmd;
     wheel_ctrl_msg.left_motor_vel = mb_state.left_velocity;
     wheel_ctrl_msg.right_motor_vel = mb_state.right_velocity;
 
-=======
-    odo_msg.x = mb_odometry.x;
-    odo_msg.y = mb_odometry.y;
-    odo_msg.theta = mb_odometry.theta;
->>>>>>> e471009b68bf42086781ee0946891346e8e45442
 
     //publish IMU & Encoder Data to LCM
     mbot_imu_t_publish(lcm, MBOT_IMU_CHANNEL, &imu_msg);
     mbot_encoder_t_publish(lcm, MBOT_ENCODER_CHANNEL, &encoder_msg);
-<<<<<<< HEAD
     odometry_t_publish(lcm, ODOMETRY_CHANNEL, &odo_msg);
     mbot_wheel_ctrl_t_publish(lcm, "MBOT_WHEEL_CTRL", &wheel_ctrl_msg);
 
-=======
-    mbot_wheel_ctrl_t_publish(lcm, "MBOT_WHEEL_CTRL", &wheel_ctrl_msg);
-    odometry_t_publish(lcm, ODOMETRY_CHANNEL, &odo_msg);
->>>>>>> e471009b68bf42086781ee0946891346e8e45442
 }
 
 /*******************************************************************************
@@ -287,25 +280,18 @@ void mobilebot_controller(){
     update_now();
     // get mb_state.left/right velocity from read_mb_sensors();
     read_mb_sensors();
-<<<<<<< HEAD
-=======
-    mb_controller_update(&mb_state, &mb_setpoints);
-    mb_update_odometry(&mb_odometry, &mb_state);
-    publish_mb_msgs();
-    rc_motor_set(LEFT_MOTOR, LEFT_MOTOR_POLAR * mb_state.left_cmd);
-    rc_motor_set(RIGHT_MOTOR, RIGHT_MOTOR_POLAR * mb_state.right_cmd);
->>>>>>> e471009b68bf42086781ee0946891346e8e45442
-
     // Controller Update Commands
-
-
-    if(strcmp(mode, OPEN_LOOP))
+    if(strcmp(mode, OPEN_LOOP)==0)
         mb_controller_openloop(&mb_state, &mb_setpoints);
     else
         mb_controller_update(&mb_state, &mb_setpoints);  
     // Drive motors
     rc_motor_set(LEFT_MOTOR, LEFT_POLARITY * mb_state.left_cmd );
     rc_motor_set(RIGHT_MOTOR, RIGHT_POLARITY * mb_state.right_cmd);
+    
+    // Update Odometry
+    mb_update_odometry(&mb_odometry, &mb_state);
+
     // publish some info (odometry) to RPi
     publish_mb_msgs();
 }
@@ -461,7 +447,7 @@ void* printf_loop(void* ptr){
 			printf("    θ    |");
 			printf("   FWD   |");
             printf("   TURN  |");
-
+            // printf("ododm.x,y,theta:");
 			printf("\n");
 		}
 		else if(new_state==PAUSED && last_state!=PAUSED){
@@ -480,7 +466,7 @@ void* printf_loop(void* ptr){
 			printf("%7.3f  |", mb_odometry.theta);
 			printf("%7.3f  |", mb_setpoints.fwd_velocity);
             printf("%7.3f  |", mb_setpoints.turn_velocity);
-
+            // printf("%.4f, %.4f, %.4f", mb_odometry->x, mb_odometry->y, mb_odometry->theta);
 			fflush(stdout);
 		}
 		rc_nanosleep(1E9 / PRINTF_HZ);
